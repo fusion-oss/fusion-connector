@@ -48,8 +48,8 @@ public class TaskBean {
     List<Task> tasks = taskRepository.findBySchedulerName(schedularName);
     log.info("Acitve tasks :: {}", tasks.size());
     exchange.setProperty("toTime", LocalDateTime.now());
-    exchange.setProperty("activeTenants", tasks);
-    exchange.setProperty("tenantTaskCount", tasks.size());
+    exchange.setProperty("activeTasks", tasks);
+    exchange.setProperty("activeTaskCount", tasks.size());
   }
 
 }

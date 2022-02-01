@@ -57,27 +57,29 @@ public class ExecuteTaskRoute extends RouteBuilder {
   public void configure() throws Exception {
 
     from("direct:executeTask").process(exchange -> {
-      Task tenantTask = exchange.getProperty("tenantTask", Task.class);
+      Integer index = (Integer) exchange.getProperty(Exchange.LOOP_INDEX);
+      Task tenantTask = (Task) exchange.getProperty("activeTasks", List.class).get(index);
       String tenantTaskData = tenantTask.getTaskData();
       TaskData task = JsonUtils.unmarshal(Optional.of(tenantTaskData),
           Optional.of(new TypeReference<TaskData>() {}));
       String uuid = UUID.randomUUID().toString();
       exchange.setProperty(CORRELATION_ID, uuid);
       exchange.setProperty(PROJECT_ID, tenantTask.getTenant().getName());
-      log.info("TenantId :: {}, TaskId :: {}, CorrelationId :: {}",
-          tenantTask.getTenant().getId(), tenantTask.getId(), uuid);
+      log.info("TenantId :: {}, TaskId :: {}, CorrelationId :: {}", tenantTask.getTenant().getId(),
+          tenantTask.getId(), uuid);
       if (task.getTaskType().equals("http")) {
-        processHttpTask(exchange, tenantTask, tenantTaskData);
+        buildHttpTask(exchange, tenantTask, tenantTaskData);
       }
     }).toD("${header.CamelHttpUrl}").streamCaching().removeHeaders("*")
         .setHeader(EVENT_TYPE, exchangeProperty(EVENT_TYPE))
         .setHeader(CORRELATION_ID, exchangeProperty(CORRELATION_ID))
-        .setHeader(PROJECT_ID, exchangeProperty(PROJECT_ID)).to("direct:jsonSplitter")
+        .setHeader(PROJECT_ID, exchangeProperty(PROJECT_ID))
+        .to("direct:jsonSplitter")
+        .toD("direct:rabbitmq")
         .bean(PostProcessorBean.class).end();
   }
 
-  private void processHttpTask(Exchange exchange, Task task, String taskData)
-      throws IOException {
+  private void buildHttpTask(Exchange exchange, Task task, String taskData) throws IOException {
     HttpTaskData httpTask = JsonUtils.unmarshal(Optional.of(taskData),
         Optional.of(new TypeReference<HttpTaskData>() {}));
 
@@ -92,9 +94,9 @@ public class ExecuteTaskRoute extends RouteBuilder {
     exchange.getIn().setHeader(Exchange.HTTP_URL, url);
     exchange.getIn().setHeader(Exchange.HTTP_METHOD, methodType);
     exchange.getIn().setHeader(Exchange.HTTP_PORT, port);
-    String params = setQueryParams(exchange, queryParams);
+    String params = getQueryParams(exchange, queryParams);
     exchange.getIn().setHeader(Exchange.HTTP_QUERY, params);
-    exchange.getIn().setHeader(HttpHeaders.AUTHORIZATION, setAuthHeader(task));
+    exchange.getIn().setHeader(HttpHeaders.AUTHORIZATION, getAuthHeader(task));
 
     Optional.ofNullable(httpTask.getHttpHeaders())
         .ifPresent(map -> map.entrySet().forEach(header -> {
@@ -105,16 +107,15 @@ public class ExecuteTaskRoute extends RouteBuilder {
 
   private LocalDateTime getLastCheckPoint(Task task) {
     LocalDateTime latestCheckpoint = task.getLatestCheckpoint();
-    return Objects.isNull(latestCheckpoint) ? task.getInitialCheckPoint()
-        : latestCheckpoint;
+    return Objects.isNull(latestCheckpoint) ? task.getInitialCheckPoint() : latestCheckpoint;
   }
 
-  private String setAuthHeader(Task tenantTask) {
+  private String getAuthHeader(Task tenantTask) {
     return "Basic " + HttpHeaders.encodeBasicAuth(tenantTask.getTenant().getAuthName(),
         tenantTask.getTenant().getAuthPassword(), null);
   }
 
-  private String setQueryParams(Exchange exchange, Map<String, String> queryParams) {
+  private String getQueryParams(Exchange exchange, Map<String, String> queryParams) {
     String params = null;
     List<String> paramList = new ArrayList<>();
 

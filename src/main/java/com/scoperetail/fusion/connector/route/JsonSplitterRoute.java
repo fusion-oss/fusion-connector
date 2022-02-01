@@ -38,8 +38,7 @@ public class JsonSplitterRoute extends RouteBuilder {
     .split(jsonpath("$"))
     .streaming()
     .marshal()
-    .json(true)
-    .toD("direct:rabbitmq");    
+    .json(true);    
   }
 
 }
