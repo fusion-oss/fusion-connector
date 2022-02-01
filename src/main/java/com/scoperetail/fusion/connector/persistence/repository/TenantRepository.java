@@ -14,9 +14,9 @@ package com.scoperetail.fusion.connector.persistence.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import com.scoperetail.fusion.connector.persistence.entity.CustomerAccount;
+import com.scoperetail.fusion.connector.persistence.entity.Tenant;
 
 @Repository
-public interface CustomerAccountRepository extends JpaRepository<CustomerAccount, Integer> {
+public interface TenantRepository extends JpaRepository<Tenant, Integer> {
 
 }

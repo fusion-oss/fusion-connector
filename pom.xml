@@ -6,12 +6,12 @@
 
 	<parent>
 		<groupId>com.scoperetail.pom</groupId>
-		<artifactId>corp-parent-pom</artifactId>
-		<version>1.10</version>
+		<artifactId>oss-parent-pom</artifactId>
+		<version>1.6</version>
 		<relativePath />
 	</parent>
 
-	<groupId>com.scoperetail.ezsell</groupId>
+	<groupId>com.scoperetail.fusion</groupId>
 	<artifactId>fusion-connector</artifactId>
 	<version>0.1-SNAPSHOT</version>
 	<name>fusion-connector</name>
@@ -162,5 +162,73 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<profiles>
+		<profile>
+			<id>release-spring</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-source-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>attach-sources</id>
+								<goals>
+									<goal>jar-no-fork</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-javadoc-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>attach-javadocs</id>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.springframework.boot</groupId>
+						<artifactId>spring-boot-maven-plugin</artifactId>
+						<configuration>
+							<generatedSourcesDirectory>${project.build.directory}/generated-sources</generatedSourcesDirectory>
+							<layers>
+								<enabled>true</enabled>
+								<configuration>${project.basedir}/src/main/resources/layers.xml</configuration>
+							</layers>
+						</configuration>
+						<executions>
+							<execution>
+								<goals>
+									<goal>build-info</goal>
+								</goals>
+								<configuration>
+									<additionalProperties>
+										<java.version>${java.version}</java.version>
+									</additionalProperties>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.springframework.boot</groupId>
+						<artifactId>spring-boot-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<goals>
+									<goal>repackage</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 
 </project>

@@ -2,7 +2,7 @@ package com.scoperetail.fusion.connector.persistence.entity;
 
 /*-
  * *****
- * ezsell-selleractive-connectors
+ * fusion-connector
  * -----
  * Copyright (C) 2018 - 2022 Scope Retail Systems Inc.
  * -----
@@ -21,6 +21,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import org.hibernate.annotations.CreationTimestamp;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -41,7 +42,7 @@ public class TaskLog {
 
   @ManyToOne
   @JoinColumn(name = "task_id")
-  private CustomerTask customerTask;
+  private Task task;
 
   @Column(name = "from_date")
   @Builder.Default
@@ -54,12 +55,13 @@ public class TaskLog {
   @Column(name = "correlation_id")
   private String correlationId;
 
-  @Column(name = "received")
-  private Long received;
-
   @Column(name = "task_status")
   private String taskStatus;
 
   @Column(name = "error_reason")
   private String errorReason;
+  
+  @CreationTimestamp
+  @Column(name = "create_ts")
+  private LocalDateTime createTs;
 }

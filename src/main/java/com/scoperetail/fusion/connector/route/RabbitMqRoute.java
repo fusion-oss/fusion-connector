@@ -19,22 +19,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class RabbitMqRoute extends RouteBuilder {
 
-  @Value("${rabbitmq.exchange}")
-  private String exchange;
-
-  @Value("${rabbitmq.queue}")
-  private String queue;
+  @Value("${rabbitmq.url}")
+  private String rabbitMqUrl;
 
   @Override
   public void configure() throws Exception {
-    from("direct:rabbitmq")
-        .to("rabbitmq:"
-                + exchange
-                + "?queue="
-                + queue
-                + "&autoDelete=false")
-        .log("Sent message to queue :: " + queue)
-        .end();
+    from("direct:rabbitmq").to(rabbitMqUrl).log("Sent message to queue.").end();
   }
 
 }

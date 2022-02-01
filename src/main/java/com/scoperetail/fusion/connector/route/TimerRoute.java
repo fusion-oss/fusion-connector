@@ -17,8 +17,8 @@ import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import com.scoperetail.fusion.connector.persistence.entity.CustomerTask;
-import com.scoperetail.fusion.connector.route.beans.CustomerTaskBean;
+import com.scoperetail.fusion.connector.persistence.entity.Task;
+import com.scoperetail.fusion.connector.route.beans.TaskBean;
 
 @Service
 public class TimerRoute extends RouteBuilder {
@@ -29,15 +29,15 @@ public class TimerRoute extends RouteBuilder {
   @Override
   public void configure() throws Exception {
 
-    from("timer://customerTask?period=" + period)
-        .bean(CustomerTaskBean.class)
-        .loop(exchangeProperty("customerTaskCount"))
+    from("timer://tenantTask?period=" + period)
+        .bean(TaskBean.class)
+        .loop(exchangeProperty("tenantTaskCount"))
         .process(
             exchange -> {
               Integer index = (Integer) exchange.getProperty(Exchange.LOOP_INDEX);
-              CustomerTask customerTask =
-                  (CustomerTask) exchange.getProperty("activeCustomers", List.class).get(index);
-              exchange.setProperty("customerTask", customerTask);
+              Task task =
+                  (Task) exchange.getProperty("activeTenants", List.class).get(index);
+              exchange.setProperty("tenantTask", task);
             })
         .to("direct:executeTask")
         .end()

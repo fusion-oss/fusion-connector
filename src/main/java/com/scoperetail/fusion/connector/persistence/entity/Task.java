@@ -18,37 +18,54 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Table(name = "customer_account")
 @Data
-@Entity
-@AllArgsConstructor
+@Builder
 @NoArgsConstructor
-public class CustomerAccount {
+@AllArgsConstructor
+@Entity
+@Table(name = "task")
+public class Task {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "id")
   private Integer id;
 
-  @Column(name = "customer_name")
-  private String customerName;
+  @ManyToOne()
+  @JoinColumn(referencedColumnName = "id")
+  private Tenant tenant;
 
-  @Column(name = "auth_name")
-  private String authName;
+  @Column(name = "scheduler_name")
+  private String schedulerName;
 
-  @Column(name = "auth_password")
-  private String authPassword;
+  @Column(name = "task_name")
+  private String taskName;
 
-  @Column(name = "is_enabled")
-  private boolean isEnabled;
+  @Column(name = "task_data")
+  private String taskData;
+
+  @Column(name = "latest_checkpoint")
+  private LocalDateTime latestCheckpoint;
+
+  @Column(name = "initial_checkpoint")
+  private LocalDateTime initialCheckPoint;
 
   @CreationTimestamp
   @Column(name = "create_ts")
   private LocalDateTime createTs;
   
+  @UpdateTimestamp
+  @Column(name = "update_ts")
+  private LocalDateTime updateTs;
+
 }

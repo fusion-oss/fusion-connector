@@ -14,6 +14,7 @@ package com.scoperetail.fusion.connector.route;
 
 import static com.scoperetail.fusion.connector.common.Constants.CORRELATION_ID;
 import static com.scoperetail.fusion.connector.common.Constants.EVENT_TYPE;
+import static com.scoperetail.fusion.connector.common.Constants.PROJECT_ID;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -32,7 +33,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.scoperetail.fusion.connector.common.JsonUtils;
 import com.scoperetail.fusion.connector.persistence.dto.HttpTaskData;
 import com.scoperetail.fusion.connector.persistence.dto.TaskData;
-import com.scoperetail.fusion.connector.persistence.entity.CustomerTask;
+import com.scoperetail.fusion.connector.persistence.entity.Task;
 import com.scoperetail.fusion.connector.route.beans.PostProcessorBean;
 
 @Service
@@ -40,35 +41,30 @@ public class ExecuteTaskRoute extends RouteBuilder {
 
   @Override
   public void configure() throws Exception {
-    
-    from("direct:executeTask")
-    .process(
-        exchange -> {
-          CustomerTask customerTask = exchange.getProperty("customerTask", CustomerTask.class);
-          String customerTaskData = customerTask.getTaskData();
-          TaskData task =
-              JsonUtils.unmarshal(
-                  Optional.of(customerTaskData), Optional.of(new TypeReference<TaskData>() {}));
-          String uuid =  UUID.randomUUID().toString();
-          exchange.setProperty(CORRELATION_ID,uuid);
-          log.info("CustomerId :: {}, TaskId :: {}, CorrelationId :: {}",
-              customerTask.getCustomer().getId(), customerTask.getId(), uuid);
-          if (task.getTaskType().equals("http")) {
-            processHttpTask(exchange, customerTask, customerTaskData);
-          }
-        })
-    .toD("${header.CamelHttpUrl}")
-    .removeHeaders("*")
-    .setHeader(EVENT_TYPE, exchangeProperty(EVENT_TYPE))
-    .setHeader(CORRELATION_ID, exchangeProperty(CORRELATION_ID))
-    .to("direct:jsonSplitter")
-    .bean(PostProcessorBean.class)
-    .end();
+
+    from("direct:executeTask").process(exchange -> {
+      Task tenantTask = exchange.getProperty("tenantTask", Task.class);
+      String tenantTaskData = tenantTask.getTaskData();
+      TaskData task = JsonUtils.unmarshal(Optional.of(tenantTaskData),
+          Optional.of(new TypeReference<TaskData>() {}));
+      String uuid = UUID.randomUUID().toString();
+      exchange.setProperty(CORRELATION_ID, uuid);
+      exchange.setProperty(PROJECT_ID, tenantTask.getTenant().getName());
+      log.info("TenantId :: {}, TaskId :: {}, CorrelationId :: {}",
+          tenantTask.getTenant().getId(), tenantTask.getId(), uuid);
+      if (task.getTaskType().equals("http")) {
+        processHttpTask(exchange, tenantTask, tenantTaskData);
+      }
+    }).toD("${header.CamelHttpUrl}").streamCaching().removeHeaders("*")
+        .setHeader(EVENT_TYPE, exchangeProperty(EVENT_TYPE))
+        .setHeader(CORRELATION_ID, exchangeProperty(CORRELATION_ID))
+        .setHeader(PROJECT_ID, exchangeProperty(PROJECT_ID)).to("direct:jsonSplitter")
+        .bean(PostProcessorBean.class).end();
   }
 
-  private void processHttpTask(Exchange exchange, CustomerTask customerTask,
-      String customerTaskData) throws IOException {
-    HttpTaskData httpTask = JsonUtils.unmarshal(Optional.of(customerTaskData),
+  private void processHttpTask(Exchange exchange, Task task, String taskData)
+      throws IOException {
+    HttpTaskData httpTask = JsonUtils.unmarshal(Optional.of(taskData),
         Optional.of(new TypeReference<HttpTaskData>() {}));
 
     String url = httpTask.getUrl();
@@ -76,15 +72,15 @@ public class ExecuteTaskRoute extends RouteBuilder {
     String methodType = httpTask.getMethodType();
     Map<String, String> queryParams = httpTask.getQueryParams();
 
-    exchange.setProperty("fromTime", getLastCheckPoint(customerTask));
-    exchange.setProperty(EVENT_TYPE, customerTask.getTaskName());
+    exchange.setProperty("fromTime", getLastCheckPoint(task));
+    exchange.setProperty(EVENT_TYPE, task.getTaskName());
 
     exchange.getIn().setHeader(Exchange.HTTP_URL, url);
     exchange.getIn().setHeader(Exchange.HTTP_METHOD, methodType);
     exchange.getIn().setHeader(Exchange.HTTP_PORT, port);
     String params = setQueryParams(exchange, queryParams);
     exchange.getIn().setHeader(Exchange.HTTP_QUERY, params);
-    exchange.getIn().setHeader(HttpHeaders.AUTHORIZATION, setAuthHeader(customerTask));
+    exchange.getIn().setHeader(HttpHeaders.AUTHORIZATION, setAuthHeader(task));
 
     Optional.ofNullable(httpTask.getHttpHeaders())
         .ifPresent(map -> map.entrySet().forEach(header -> {
@@ -93,15 +89,15 @@ public class ExecuteTaskRoute extends RouteBuilder {
     log.info("URL :: {}?{}", url, params);
   }
 
-  private LocalDateTime getLastCheckPoint(CustomerTask customerTask) {
-    LocalDateTime latestCheckpoint = customerTask.getLatestCheckpoint();
-    return Objects.isNull(latestCheckpoint) ? customerTask.getInitialCheckPoint()
+  private LocalDateTime getLastCheckPoint(Task task) {
+    LocalDateTime latestCheckpoint = task.getLatestCheckpoint();
+    return Objects.isNull(latestCheckpoint) ? task.getInitialCheckPoint()
         : latestCheckpoint;
   }
 
-  private String setAuthHeader(CustomerTask customerTask) {
-    return "Basic " + HttpHeaders.encodeBasicAuth(customerTask.getCustomer().getAuthName(),
-        customerTask.getCustomer().getAuthPassword(), null);
+  private String setAuthHeader(Task tenantTask) {
+    return "Basic " + HttpHeaders.encodeBasicAuth(tenantTask.getTenant().getAuthName(),
+        tenantTask.getTenant().getAuthPassword(), null);
   }
 
   private String setQueryParams(Exchange exchange, Map<String, String> queryParams) {

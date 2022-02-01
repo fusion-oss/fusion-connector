@@ -2,7 +2,7 @@ package com.scoperetail.fusion.connector.persistence.repository;
 
 /*-
  * *****
- * ezsell-selleractive-connectors
+ * fusion-connector
  * -----
  * Copyright (C) 2018 - 2022 Scope Retail Systems Inc.
  * -----

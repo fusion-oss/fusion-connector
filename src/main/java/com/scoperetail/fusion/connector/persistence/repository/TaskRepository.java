@@ -17,16 +17,16 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import com.scoperetail.fusion.connector.persistence.entity.CustomerTask;
+import com.scoperetail.fusion.connector.persistence.entity.Task;
 
 @Repository
-public interface CustomerTaskRepository extends JpaRepository<CustomerTask, String> {
+public interface TaskRepository extends JpaRepository<Task, String> {
 
   static final String FIND_TASK_BY_SCHEDULER_NAME =
-      "select ct from CustomerTask ct JOIN FETCH ct.customer ca "
-          + "WHERE ca.isEnabled=1 and ct.schedulerName=:schedulerName";
+      "select tt from Task tt JOIN FETCH tt.tenant t "
+          + "WHERE t.isEnabled=1 and tt.schedulerName=:schedulerName";
 
   @Query(value = FIND_TASK_BY_SCHEDULER_NAME)
-  List<CustomerTask> findBySchedulerName(@Param("schedulerName") String schedularName);
+  List<Task> findBySchedulerName(@Param("schedulerName") String schedularName);
 
 }

@@ -17,25 +17,25 @@ import java.util.List;
 import org.apache.camel.Exchange;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import com.scoperetail.fusion.connector.persistence.entity.CustomerTask;
-import com.scoperetail.fusion.connector.persistence.repository.CustomerTaskRepository;
+import com.scoperetail.fusion.connector.persistence.entity.Task;
+import com.scoperetail.fusion.connector.persistence.repository.TaskRepository;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class CustomerTaskBean {
+public class TaskBean {
 
   @Value("${schedularName}")
   private String schedularName;
 
   @Autowired
-  private CustomerTaskRepository customerTaskRepository;
+  private TaskRepository taskRepository;
 
   public void setTasks(Exchange exchange) {
-    List<CustomerTask> customerTasks = customerTaskRepository.findBySchedulerName(schedularName);
-    log.info("Acitve tasks :: {}", customerTasks.size());
+    List<Task> tasks = taskRepository.findBySchedulerName(schedularName);
+    log.info("Acitve tasks :: {}", tasks.size());
     exchange.setProperty("toTime", LocalDateTime.now());
-    exchange.setProperty("activeCustomers", customerTasks);
-    exchange.setProperty("customerTaskCount", customerTasks.size());
+    exchange.setProperty("activeTenants", tasks);
+    exchange.setProperty("tenantTaskCount", tasks.size());
   }
 
 }
