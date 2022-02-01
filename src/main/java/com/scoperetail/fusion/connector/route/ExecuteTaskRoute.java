@@ -65,6 +65,7 @@ public class ExecuteTaskRoute extends RouteBuilder {
       String uuid = UUID.randomUUID().toString();
       exchange.setProperty(CORRELATION_ID, uuid);
       exchange.setProperty(PROJECT_ID, tenantTask.getTenant().getName());
+      exchange.setProperty("tenantTask", tenantTask);
       log.info("TenantId :: {}, TaskId :: {}, CorrelationId :: {}", tenantTask.getTenant().getId(),
           tenantTask.getId(), uuid);
       if (task.getTaskType().equals("http")) {
@@ -73,9 +74,7 @@ public class ExecuteTaskRoute extends RouteBuilder {
     }).toD("${header.CamelHttpUrl}").streamCaching().removeHeaders("*")
         .setHeader(EVENT_TYPE, exchangeProperty(EVENT_TYPE))
         .setHeader(CORRELATION_ID, exchangeProperty(CORRELATION_ID))
-        .setHeader(PROJECT_ID, exchangeProperty(PROJECT_ID))
-        .to("direct:jsonSplitter")
-        .toD("direct:rabbitmq")
+        .setHeader(PROJECT_ID, exchangeProperty(PROJECT_ID)).to("direct:jsonSplitter")
         .bean(PostProcessorBean.class).end();
   }
 

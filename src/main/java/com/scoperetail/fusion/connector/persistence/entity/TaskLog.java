@@ -55,7 +55,7 @@ public class TaskLog {
   private Long id;
 
   @ManyToOne
-  @JoinColumn(name = "task_id")
+  @JoinColumn(referencedColumnName = "id")
   private Task task;
 
   @Column(name = "from_date")
@@ -65,7 +65,7 @@ public class TaskLog {
   @Column(name = "to_date")
   @Builder.Default
   private LocalDateTime to = LocalDateTime.now();
-  
+
   @Column(name = "correlation_id")
   private String correlationId;
 
@@ -74,7 +74,7 @@ public class TaskLog {
 
   @Column(name = "error_reason")
   private String errorReason;
-  
+
   @CreationTimestamp
   @Column(name = "create_ts")
   private LocalDateTime createTs;
