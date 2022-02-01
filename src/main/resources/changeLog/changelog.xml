@@ -1,0 +1,73 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd">
+
+	<changeSet id="initialTables" author="VaibhavJain">
+
+		<createTable tableName="tenant">
+			<column name="id" autoIncrement="true" type="int">
+				<constraints primaryKey="true" nullable="false" />
+			</column>
+			<column name="name" type="varchar(20))">
+				<constraints nullable="false" />
+			</column>
+			<column name="auth_name" type="varchar(10)">
+				<constraints nullable="false" />
+			</column>
+			<column name="auth_password" type="varchar(100)">
+				<constraints nullable="false" />
+			</column>
+			<column name="is_enabled" type="boolean">
+				<constraints nullable="false" />
+			</column>
+			<column name="create_ts" type="timestamp"></column>
+		</createTable>
+
+		<createTable tableName="task">
+			<column name="id" type="int" autoIncrement="true">
+				<constraints primaryKey="true"
+					primaryKeyName="pk_success_checkpoint" />
+			</column>
+			<column name="tenant_id" type="int">
+				<constraints nullable="false" />
+			</column>
+			<column name="scheduler_name" type="VARCHAR(50)">
+				<constraints nullable="false" />
+			</column>
+			<column name="task_name" type="VARCHAR(50)">
+				<constraints nullable="false" />
+			</column>
+			<column name="task_data" type="VARCHAR(2048)" />
+			<column name="initial_checkpoint" type="timestamp" />
+			<column name="latest_checkpoint" type="timestamp" />
+			<column name="create_ts" type="timestamp"></column>
+			<column name="update_ts" type="timestamp"></column>
+		</createTable>
+
+		<createTable tableName="task_log">
+			<column name="id" autoIncrement="true" type="bigint">
+				<constraints primaryKey="true" primaryKeyName="pk_log" />
+			</column>
+			<column name="task_id" type="int" />
+			<column name="from_date" type="timestamp" />
+			<column name="to_date" type="timestamp" />
+			<column name="correlation_id" type="varchar(64)"/>
+			<column name="task_status" type="varchar(20)" />
+			<column name="error_reason" type="varchar(512)" />
+			<column name="create_ts" type="timestamp"></column>
+		</createTable>
+
+		<addForeignKeyConstraint
+			constraintName="tenant_fk"
+			referencedTableName="tenant" referencedColumnNames="id"
+			baseTableName="task" baseColumnNames="tenant_id" />
+
+		<addForeignKeyConstraint
+			constraintName="log_task_fk" referencedTableName="task"
+			referencedColumnNames="id" baseTableName="task_log"
+			baseColumnNames="task_id" />
+	</changeSet>
+
+</databaseChangeLog>
