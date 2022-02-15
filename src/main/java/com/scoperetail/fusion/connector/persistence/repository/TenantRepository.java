@@ -1,5 +1,7 @@
 package com.scoperetail.fusion.connector.persistence.repository;
 
+import java.util.List;
+
 /*-
  * *****
  * fusion-connector
@@ -32,5 +34,7 @@ import com.scoperetail.fusion.connector.persistence.entity.Tenant;
 
 @Repository
 public interface TenantRepository extends JpaRepository<Tenant, Integer> {
+
+  List<Tenant> findByIsEnabled(boolean isEnabled);
 
 }
