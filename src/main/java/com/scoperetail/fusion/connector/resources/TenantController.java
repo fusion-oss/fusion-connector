@@ -1,4 +1,4 @@
-package com.scoperetail.fusion.connector.route;
+package com.scoperetail.fusion.connector.resources;
 
 /*-
  * *****
@@ -26,25 +26,24 @@ package com.scoperetail.fusion.connector.route;
  * =====
  */
 
-import org.apache.camel.builder.RouteBuilder;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import com.scoperetail.fusion.connector.route.beans.TaskBean;
+import java.util.Map;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+import com.scoperetail.fusion.connector.services.TenantService;
 
-@Service
-public class TimerRoute extends RouteBuilder {
+@CrossOrigin
+@RestController
+public class TenantController {
 
-  @Value("${timer.period.in.ms}")
-  private String period;
+  @Autowired
+  private TenantService tenantService;
 
-  @Override
-  public void configure() throws Exception {
-
-    from("timer://tenantTask?period=" + period).bean(TaskBean.class)
-        .loop(exchangeProperty("activeTaskCount"))
-        .to("direct:executeTask")
-        .end()
-        .log("Scheduler job completed successfully.");
+  @GetMapping(value = "/tenants/auth", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Map<String, String> getAuthenticationForTenants() {
+    return tenantService.getAuthDetails();
   }
 
 }

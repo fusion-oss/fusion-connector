@@ -1,4 +1,4 @@
-package com.scoperetail.fusion.connector.route;
+package com.scoperetail.fusion.connector.services.impl;
 
 /*-
  * *****
@@ -26,25 +26,35 @@ package com.scoperetail.fusion.connector.route;
  * =====
  */
 
-import org.apache.camel.builder.RouteBuilder;
-import org.springframework.beans.factory.annotation.Value;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
-import com.scoperetail.fusion.connector.route.beans.TaskBean;
+import com.scoperetail.fusion.connector.persistence.entity.Tenant;
+import com.scoperetail.fusion.connector.persistence.repository.TenantRepository;
+import com.scoperetail.fusion.connector.services.TenantService;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
-public class TimerRoute extends RouteBuilder {
+public class TenantServiceImpl implements TenantService {
 
-  @Value("${timer.period.in.ms}")
-  private String period;
+  @Autowired
+  private TenantRepository tenantRepository;
 
   @Override
-  public void configure() throws Exception {
+  public Map<String, String> getAuthDetails() {
+    log.debug("Fetching auth details");
+    List<Tenant> activeTenant = tenantRepository.findByIsEnabled(true);
+    Map<String, String> authDetailsByTenant = activeTenant.stream()
+        .collect(Collectors.toMap(Tenant::getAuthName, tenant -> HttpHeaders
+            .encodeBasicAuth(tenant.getAuthName(), tenant.getAuthPassword(), null), (e1, e2) -> e1,
+            HashMap::new));
 
-    from("timer://tenantTask?period=" + period).bean(TaskBean.class)
-        .loop(exchangeProperty("activeTaskCount"))
-        .to("direct:executeTask")
-        .end()
-        .log("Scheduler job completed successfully.");
+    log.debug("Found {} active tenants", activeTenant.size());
+    return authDetailsByTenant;
   }
-
 }
