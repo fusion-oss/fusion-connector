@@ -29,6 +29,7 @@ package com.scoperetail.fusion.connector.services.impl;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
@@ -47,12 +48,10 @@ public class TenantServiceImpl implements TenantService {
   @Override
   public Map<String, String> getAuthDetails() {
     log.debug("Fetching auth details");
-    Map<String, String> authDetailsByTenant = new HashMap<>();
     List<Tenant> activeTenant = tenantRepository.findByIsEnabled(true);
-    activeTenant.forEach(tenant -> {
-      authDetailsByTenant.put(tenant.getName(),
-          HttpHeaders.encodeBasicAuth(tenant.getAuthName(), tenant.getAuthPassword(), null));
-    });
+    Map<String, String> authDetailsByTenant =
+        activeTenant.stream().collect(Collectors.toMap(Tenant::getAuthName, tenant -> HttpHeaders
+            .encodeBasicAuth(tenant.getAuthName(), tenant.getAuthPassword(), null)));
 
     log.debug("Found {} active tenants", activeTenant.size());
     return authDetailsByTenant;
