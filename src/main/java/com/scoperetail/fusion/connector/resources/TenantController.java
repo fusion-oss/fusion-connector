@@ -41,7 +41,7 @@ public class TenantController {
   @Autowired
   private TenantService tenantService;
 
-  @GetMapping(value = "/authentication/details", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/tenants/auth", produces = MediaType.APPLICATION_JSON_VALUE)
   public Map<String, String> getAuthenticationForTenants() {
     return tenantService.getAuthDetails();
   }

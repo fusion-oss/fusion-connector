@@ -49,10 +49,12 @@ public class TenantServiceImpl implements TenantService {
     log.debug("Fetching auth details");
     Map<String, String> authDetailsByTenant = new HashMap<>();
     List<Tenant> activeTenant = tenantRepository.findByIsEnabled(true);
-    activeTenant.stream().forEach(tenant -> {
+    activeTenant.forEach(tenant -> {
       authDetailsByTenant.put(tenant.getName(),
           HttpHeaders.encodeBasicAuth(tenant.getAuthName(), tenant.getAuthPassword(), null));
     });
+
+    log.debug("Found {} active tenants", activeTenant.size());
     return authDetailsByTenant;
   }
 }
