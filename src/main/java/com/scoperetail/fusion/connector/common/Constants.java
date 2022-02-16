@@ -34,5 +34,6 @@ public class Constants {
   public static final String EVENT_TYPE = "eventType";
   public static final String CORRELATION_ID = "correlationId";
   public static final String PROJECT_ID = "project_id";
+  public static final String AUTHORIZATION = "authorization";
 
 }

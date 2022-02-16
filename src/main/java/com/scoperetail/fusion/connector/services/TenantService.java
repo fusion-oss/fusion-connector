@@ -30,6 +30,6 @@ import java.util.Map;
 
 public interface TenantService {
 
-  public Map<String, String> getAuthDetails();
+  public Map<String, Map<String, String>> getAuthDetails();
 
 }

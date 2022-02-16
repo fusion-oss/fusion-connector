@@ -37,6 +37,7 @@ import com.scoperetail.fusion.connector.persistence.entity.Tenant;
 import com.scoperetail.fusion.connector.persistence.repository.TenantRepository;
 import com.scoperetail.fusion.connector.services.TenantService;
 import lombok.extern.slf4j.Slf4j;
+import static com.scoperetail.fusion.connector.common.Constants.AUTHORIZATION;
 
 @Slf4j
 @Service
@@ -46,15 +47,21 @@ public class TenantServiceImpl implements TenantService {
   private TenantRepository tenantRepository;
 
   @Override
-  public Map<String, String> getAuthDetails() {
+  public Map<String, Map<String, String>> getAuthDetails() {
     log.debug("Fetching auth details");
     List<Tenant> activeTenant = tenantRepository.findByIsEnabled(true);
-    Map<String, String> authDetailsByTenant = activeTenant.stream()
-        .collect(Collectors.toMap(Tenant::getName, tenant -> HttpHeaders
-            .encodeBasicAuth(tenant.getAuthName(), tenant.getAuthPassword(), null), (e1, e2) -> e1,
-            HashMap::new));
+    Map<String, Map<String, String>> authDetailsByTenant = activeTenant.stream().collect(
+        Collectors.toMap(Tenant::getName, this::getTenantDetails, (e1, e2) -> e1, HashMap::new));
 
     log.debug("Found {} active tenants", activeTenant.size());
     return authDetailsByTenant;
   }
+
+  private Map<String, String> getTenantDetails(Tenant tenant) {
+    Map<String, String> values = new HashMap<>(1);
+    values.put(AUTHORIZATION, "Basic "
+        + HttpHeaders.encodeBasicAuth(tenant.getAuthName(), tenant.getAuthPassword(), null));
+    return values;
+  }
+
 }
