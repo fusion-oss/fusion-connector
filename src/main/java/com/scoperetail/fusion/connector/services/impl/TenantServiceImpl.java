@@ -50,7 +50,7 @@ public class TenantServiceImpl implements TenantService {
     log.debug("Fetching auth details");
     List<Tenant> activeTenant = tenantRepository.findByIsEnabled(true);
     Map<String, String> authDetailsByTenant = activeTenant.stream()
-        .collect(Collectors.toMap(Tenant::getAuthName, tenant -> HttpHeaders
+        .collect(Collectors.toMap(Tenant::getName, tenant -> HttpHeaders
             .encodeBasicAuth(tenant.getAuthName(), tenant.getAuthPassword(), null), (e1, e2) -> e1,
             HashMap::new));
 
