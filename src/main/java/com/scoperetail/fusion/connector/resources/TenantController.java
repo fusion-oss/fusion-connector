@@ -42,7 +42,7 @@ public class TenantController {
   private TenantService tenantService;
 
   @GetMapping(value = "/tenants/auth", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Map<String, String> getAuthenticationForTenants() {
+  public Map<String, Map<String, String>> getAuthenticationForTenants() {
     return tenantService.getAuthDetails();
   }
 
