@@ -59,9 +59,9 @@ public class TenantServiceImpl implements TenantService {
 
   private Map<String, String> getTenantDetails(Tenant tenant) {
     Map<String, String> details = new HashMap<>(1);
-    details.put(AUTHORIZATION, "Basic "
+    details.put(HttpHeaders.AUTHORIZATION, "Basic "
         + HttpHeaders.encodeBasicAuth(tenant.getAuthName(), tenant.getAuthPassword(), null));
-    details.put("Content-Type", "application/json");
+    details.put(HttpHeaders.CONTENT_TYPE, "application/json");
     return details;
   }
 
