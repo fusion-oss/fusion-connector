@@ -37,7 +37,6 @@ import com.scoperetail.fusion.connector.persistence.entity.Tenant;
 import com.scoperetail.fusion.connector.persistence.repository.TenantRepository;
 import com.scoperetail.fusion.connector.services.TenantService;
 import lombok.extern.slf4j.Slf4j;
-import static com.scoperetail.fusion.connector.common.Constants.AUTHORIZATION;
 
 @Slf4j
 @Service
@@ -58,7 +57,7 @@ public class TenantServiceImpl implements TenantService {
   }
 
   private Map<String, String> getTenantDetails(Tenant tenant) {
-    Map<String, String> details = new HashMap<>(1);
+    Map<String, String> details = new HashMap<>(2);
     details.put(HttpHeaders.AUTHORIZATION, "Basic "
         + HttpHeaders.encodeBasicAuth(tenant.getAuthName(), tenant.getAuthPassword(), null));
     details.put(HttpHeaders.CONTENT_TYPE, "application/json");
