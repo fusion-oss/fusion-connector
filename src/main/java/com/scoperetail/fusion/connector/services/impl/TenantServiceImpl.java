@@ -58,10 +58,11 @@ public class TenantServiceImpl implements TenantService {
   }
 
   private Map<String, String> getTenantDetails(Tenant tenant) {
-    Map<String, String> values = new HashMap<>(1);
-    values.put(AUTHORIZATION, "Basic "
+    Map<String, String> details = new HashMap<>(1);
+    details.put(AUTHORIZATION, "Basic "
         + HttpHeaders.encodeBasicAuth(tenant.getAuthName(), tenant.getAuthPassword(), null));
-    return values;
+    details.put("Content-Type", "application/json");
+    return details;
   }
 
 }
