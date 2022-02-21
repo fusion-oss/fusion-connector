@@ -1,2 +1,2 @@
 # must-use-template
-Use this Template for all repositories
+Use this Template for all repositories 
