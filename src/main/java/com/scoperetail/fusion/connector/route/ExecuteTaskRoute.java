@@ -28,7 +28,7 @@ package com.scoperetail.fusion.connector.route;
 
 import static com.scoperetail.fusion.connector.common.Constants.CORRELATION_ID;
 import static com.scoperetail.fusion.connector.common.Constants.EVENT_TYPE;
-import static com.scoperetail.fusion.connector.common.Constants.TENANT_ID;
+import static com.scoperetail.fusion.connector.common.Constants.PROJECT_ID;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -64,7 +64,7 @@ public class ExecuteTaskRoute extends RouteBuilder {
           Optional.of(new TypeReference<TaskData>() {}));
       String uuid = UUID.randomUUID().toString();
       exchange.setProperty(CORRELATION_ID, uuid);
-      exchange.setProperty(TENANT_ID, tenantTask.getTenant().getName());
+      exchange.setProperty(PROJECT_ID, tenantTask.getTenant().getName());
       exchange.setProperty("tenantTask", tenantTask);
       log.info("TenantId :: {}, TaskId :: {}, CorrelationId :: {}", tenantTask.getTenant().getId(),
           tenantTask.getId(), uuid);
@@ -74,7 +74,7 @@ public class ExecuteTaskRoute extends RouteBuilder {
     }).toD("${header.CamelHttpUrl}").streamCaching().removeHeaders("*")
         .setHeader(EVENT_TYPE, exchangeProperty(EVENT_TYPE))
         .setHeader(CORRELATION_ID, exchangeProperty(CORRELATION_ID))
-        .setHeader(TENANT_ID, exchangeProperty(TENANT_ID)).to("direct:jsonSplitter")
+        .setHeader(PROJECT_ID, exchangeProperty(PROJECT_ID)).to("direct:jsonSplitter")
         .bean(PostProcessorBean.class).end();
   }
 

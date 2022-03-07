@@ -33,6 +33,6 @@ public class Constants {
   public static final String UTC = "UTC";
   public static final String EVENT_TYPE = "eventType";
   public static final String CORRELATION_ID = "correlationId";
-  public static final String TENANT_ID = "tenantId";
+  public static final String PROJECT_ID = "projectId";
 
 }
