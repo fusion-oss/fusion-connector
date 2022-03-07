@@ -28,7 +28,6 @@ package com.scoperetail.fusion.connector.route;
 
 import static com.scoperetail.fusion.connector.common.Constants.CORRELATION_ID;
 import static com.scoperetail.fusion.connector.common.Constants.EVENT_TYPE;
-import static com.scoperetail.fusion.connector.common.Constants.TENANT_ID;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -40,6 +39,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -53,6 +53,9 @@ import com.scoperetail.fusion.connector.route.beans.PostProcessorBean;
 @Service
 public class ExecuteTaskRoute extends RouteBuilder {
 
+  @Value("${tenantIdentifierHeader:tenantId}")
+  private String tenantIdentifierHeader;
+
   @Override
   public void configure() throws Exception {
 
@@ -64,7 +67,7 @@ public class ExecuteTaskRoute extends RouteBuilder {
           Optional.of(new TypeReference<TaskData>() {}));
       String uuid = UUID.randomUUID().toString();
       exchange.setProperty(CORRELATION_ID, uuid);
-      exchange.setProperty(TENANT_ID, tenantTask.getTenant().getName());
+      exchange.setProperty(tenantIdentifierHeader, tenantTask.getTenant().getName());
       exchange.setProperty("tenantTask", tenantTask);
       log.info("TenantId :: {}, TaskId :: {}, CorrelationId :: {}", tenantTask.getTenant().getId(),
           tenantTask.getId(), uuid);
@@ -74,8 +77,8 @@ public class ExecuteTaskRoute extends RouteBuilder {
     }).toD("${header.CamelHttpUrl}").streamCaching().removeHeaders("*")
         .setHeader(EVENT_TYPE, exchangeProperty(EVENT_TYPE))
         .setHeader(CORRELATION_ID, exchangeProperty(CORRELATION_ID))
-        .setHeader(TENANT_ID, exchangeProperty(TENANT_ID)).to("direct:jsonSplitter")
-        .bean(PostProcessorBean.class).end();
+        .setHeader(tenantIdentifierHeader, exchangeProperty(tenantIdentifierHeader))
+        .to("direct:jsonSplitter").bean(PostProcessorBean.class).end();
   }
 
   private void buildHttpTask(Exchange exchange, Task task, String taskData) throws IOException {
