@@ -30,5 +30,5 @@ import java.util.Map;
 
 public interface TenantService {
 
-  public Map<String, String> getAuthDetails(String tenantName, String taskName);
+  public Map<String, String> getAuthDetails(String tenantName);
 }

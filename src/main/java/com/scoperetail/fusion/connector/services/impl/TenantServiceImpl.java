@@ -27,10 +27,11 @@ package com.scoperetail.fusion.connector.services.impl;
  */
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import com.scoperetail.fusion.connector.persistence.entity.Task;
 import com.scoperetail.fusion.connector.persistence.repository.TaskRepository;
 import com.scoperetail.fusion.connector.services.TenantService;
@@ -43,12 +44,15 @@ public class TenantServiceImpl implements TenantService {
   @Autowired private TaskRepository taskRepository;
 
   @Override
-  public Map<String, String> getAuthDetails(final String tenantName, final String taskName) {
-    Map<String, String> authDetailsByTenant = new HashMap<>(1);
-    log.debug("Fetching auth details for tenant :: {} and task :: {}", tenantName, taskName);
-    Optional<Task> taskOpt =
-        taskRepository.findByTenant_NameAndTaskNameAndIsEnabled(tenantName, taskName, true);
-    taskOpt.ifPresent(task -> authDetailsByTenant.put(tenantName, task.getTaskData()));
+  public Map<String, String> getAuthDetails(final String tenantName) {
+    Map<String, String> authDetailsByTenant = new HashMap<>(4);
+    log.debug("Fetching auth details for tenant :: {} and task :: {}", tenantName);
+    List<Task> taskList = taskRepository.findByTenant_NameAndIsEnabled(tenantName, true);
+    if (!CollectionUtils.isEmpty(taskList)) {
+      taskList.forEach(
+          task ->
+              authDetailsByTenant.put(tenantName + "_" + task.getTaskName(), task.getTaskData()));
+    }
     log.debug("Response :: {}", authDetailsByTenant);
     return authDetailsByTenant;
   }

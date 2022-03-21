@@ -27,7 +27,6 @@ package com.scoperetail.fusion.connector.persistence.repository;
  */
 
 import java.util.List;
-import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -44,6 +43,5 @@ public interface TaskRepository extends JpaRepository<Task, String> {
   @Query(value = FIND_TASK_BY_SCHEDULER_NAME)
   List<Task> findBySchedulerName(@Param("schedulerName") String schedularName);
 
-  Optional<Task> findByTenant_NameAndTaskNameAndIsEnabled(
-      String tenantId, String taskName, Boolean isEnabled);
+  List<Task> findByTenant_NameAndIsEnabled(String tenantId, Boolean isEnabled);
 }

@@ -44,7 +44,7 @@ public class TenantController {
 
   @GetMapping(value = "/tenants/{tenantName}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Map<String, String> getAuthenticationForTenants(
-      @PathVariable("tenantName") String tenantName, @RequestParam("taskName") String taskName) {
-    return tenantService.getAuthDetails(tenantName, taskName);
+      @PathVariable("tenantName") String tenantName) {
+    return tenantService.getAuthDetails(tenantName);
   }
 }
