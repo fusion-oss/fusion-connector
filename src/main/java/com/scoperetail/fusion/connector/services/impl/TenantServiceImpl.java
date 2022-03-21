@@ -12,10 +12,10 @@ package com.scoperetail.fusion.connector.services.impl;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -27,14 +27,12 @@ package com.scoperetail.fusion.connector.services.impl;
  */
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
-import com.scoperetail.fusion.connector.persistence.entity.Tenant;
-import com.scoperetail.fusion.connector.persistence.repository.TenantRepository;
+import com.scoperetail.fusion.connector.persistence.entity.Task;
+import com.scoperetail.fusion.connector.persistence.repository.TaskRepository;
 import com.scoperetail.fusion.connector.services.TenantService;
 import lombok.extern.slf4j.Slf4j;
 
@@ -42,26 +40,16 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class TenantServiceImpl implements TenantService {
 
-  @Autowired
-  private TenantRepository tenantRepository;
+  @Autowired private TaskRepository taskRepository;
 
   @Override
-  public Map<String, Map<String, String>> getAuthDetails() {
-    log.debug("Fetching auth details");
-    List<Tenant> activeTenant = tenantRepository.findByIsEnabled(true);
-    Map<String, Map<String, String>> authDetailsByTenant = activeTenant.stream().collect(
-        Collectors.toMap(Tenant::getName, this::getTenantDetails, (e1, e2) -> e1, HashMap::new));
-
-    log.debug("Found {} active tenants", activeTenant.size());
+  public Map<String, String> getAuthDetails(final String tenantName, final String taskName) {
+    Map<String, String> authDetailsByTenant = new HashMap<>(1);
+    log.debug("Fetching auth details for tenant :: {} and task :: {}", tenantName, taskName);
+    Optional<Task> taskOpt =
+        taskRepository.findByTenant_NameAndTaskNameAndIsEnabled(tenantName, taskName, true);
+    taskOpt.ifPresent(task -> authDetailsByTenant.put(tenantName, task.getTaskData()));
+    log.debug("Response :: {}", authDetailsByTenant);
     return authDetailsByTenant;
   }
-
-  private Map<String, String> getTenantDetails(Tenant tenant) {
-    Map<String, String> details = new HashMap<>(2);
-    details.put(HttpHeaders.AUTHORIZATION, "Basic "
-        + HttpHeaders.encodeBasicAuth(tenant.getAuthName(), tenant.getAuthPassword(), null));
-    details.put(HttpHeaders.CONTENT_TYPE, "application/json");
-    return details;
-  }
-
 }

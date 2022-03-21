@@ -12,10 +12,10 @@ package com.scoperetail.fusion.connector.resources;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -31,6 +31,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.scoperetail.fusion.connector.services.TenantService;
 
@@ -38,12 +40,11 @@ import com.scoperetail.fusion.connector.services.TenantService;
 @RestController
 public class TenantController {
 
-  @Autowired
-  private TenantService tenantService;
+  @Autowired private TenantService tenantService;
 
-  @GetMapping(value = "/tenants/auth", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Map<String, Map<String, String>> getAuthenticationForTenants() {
-    return tenantService.getAuthDetails();
+  @GetMapping(value = "/tenants/{tenantName}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Map<String, String> getAuthenticationForTenants(
+      @PathVariable("tenantName") String tenantName, @RequestParam("taskName") String taskName) {
+    return tenantService.getAuthDetails(tenantName, taskName);
   }
-
 }

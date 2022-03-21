@@ -53,21 +53,34 @@
 			<column name="task_id" type="int" />
 			<column name="from_date" type="timestamp" />
 			<column name="to_date" type="timestamp" />
-			<column name="correlation_id" type="varchar(64)"/>
+			<column name="correlation_id" type="varchar(64)" />
 			<column name="task_status" type="varchar(20)" />
 			<column name="error_reason" type="varchar(512)" />
 			<column name="create_ts" type="timestamp"></column>
 		</createTable>
 
 		<addForeignKeyConstraint
-			constraintName="tenant_fk"
-			referencedTableName="tenant" referencedColumnNames="id"
-			baseTableName="task" baseColumnNames="tenant_id" />
+			constraintName="tenant_fk" referencedTableName="tenant"
+			referencedColumnNames="id" baseTableName="task"
+			baseColumnNames="tenant_id" />
 
 		<addForeignKeyConstraint
 			constraintName="log_task_fk" referencedTableName="task"
 			referencedColumnNames="id" baseTableName="task_log"
 			baseColumnNames="task_id" />
+	</changeSet>
+
+	<changeSet id="EZSELL-139" author="VaibhavJain">
+		<dropColumn tableName="tenant">
+			<column name="auth_name" />
+			<column name="auth_password" />
+		</dropColumn>
+
+		<addColumn tableName="task">
+			<column name="is_enabled" type="boolean">
+				<constraints nullable="false" />
+			</column>
+		</addColumn>
 	</changeSet>
 
 </databaseChangeLog>

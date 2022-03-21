@@ -12,10 +12,10 @@ package com.scoperetail.fusion.connector.persistence.repository;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -27,6 +27,7 @@ package com.scoperetail.fusion.connector.persistence.repository;
  */
 
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -37,10 +38,12 @@ import com.scoperetail.fusion.connector.persistence.entity.Task;
 public interface TaskRepository extends JpaRepository<Task, String> {
 
   static final String FIND_TASK_BY_SCHEDULER_NAME =
-      "select tt from Task tt JOIN FETCH tt.tenant t "
-          + "WHERE t.isEnabled=1 and tt.schedulerName=:schedulerName";
+      "select tk from Task tk JOIN FETCH tk.tenant t "
+          + "WHERE t.isEnabled=1 AND tk.isEnabled=1 AND tk.schedulerName=:schedulerName";
 
   @Query(value = FIND_TASK_BY_SCHEDULER_NAME)
   List<Task> findBySchedulerName(@Param("schedulerName") String schedularName);
 
+  Optional<Task> findByTenant_NameAndTaskNameAndIsEnabled(
+      String tenantId, String taskName, Boolean isEnabled);
 }

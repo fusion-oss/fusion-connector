@@ -18,10 +18,10 @@ import java.util.Optional;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -53,21 +53,21 @@ public final class JsonUtils {
     mapper.setSerializationInclusion(Include.NON_NULL);
     final JavaTimeModule module = new JavaTimeModule();
     mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-    module.addDeserializer(LocalDateTime.class,
-        new LocalDateTimeDeserializer(DateTimeFormatter.ISO_DATE_TIME));
-    module.addSerializer(LocalDateTime.class,
-        new LocalDateTimeSerializer(DateTimeFormatter.ISO_DATE_TIME));
+    module.addDeserializer(
+        LocalDateTime.class, new LocalDateTimeDeserializer(DateTimeFormatter.ISO_DATE_TIME));
+    module.addSerializer(
+        LocalDateTime.class, new LocalDateTimeSerializer(DateTimeFormatter.ISO_DATE_TIME));
     module.addDeserializer(LocalTime.class, new LocalTimeDeserializer(DateTimeFormatter.ISO_TIME));
     module.addSerializer(LocalTime.class, new LocalTimeSerializer(DateTimeFormatter.ISO_TIME));
   }
-  
-  public static final <T> T unmarshal(final Optional<String> message,
-      final Optional<TypeReference<T>> typeReference) throws IOException {
+
+  public static final <T> T unmarshal(
+      final Optional<String> message, final Optional<TypeReference<T>> typeReference)
+      throws IOException {
     final String incomingMessage =
         message.orElseThrow(() -> new IOException("Unable to unmarshal :: Message = null"));
     final TypeReference<T> incomingType =
         typeReference.orElseThrow(() -> new IOException("Unable to unmarshal :: Type = null"));
     return mapper.readValue(incomingMessage, incomingType);
   }
-
 }
