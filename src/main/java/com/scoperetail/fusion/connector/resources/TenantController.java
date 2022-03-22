@@ -31,8 +31,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.scoperetail.fusion.connector.services.TenantService;
 
@@ -42,9 +40,8 @@ public class TenantController {
 
   @Autowired private TenantService tenantService;
 
-  @GetMapping(value = "/tenants/{tenantName}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Map<String, String> getAuthenticationForTenants(
-      @PathVariable("tenantName") String tenantName) {
-    return tenantService.getAuthDetails(tenantName);
+  @GetMapping(value = "/tenants", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Map<String, String> getTenants() {
+    return tenantService.getTenants();
   }
 }

@@ -44,16 +44,16 @@ public class TenantServiceImpl implements TenantService {
   @Autowired private TaskRepository taskRepository;
 
   @Override
-  public Map<String, String> getAuthDetails(final String tenantName) {
-    Map<String, String> authDetailsByTenant = new HashMap<>(4);
-    log.debug("Fetching auth details for tenant :: {} and task :: {}", tenantName);
-    List<Task> taskList = taskRepository.findByTenant_NameAndIsEnabled(tenantName, true);
+  public Map<String, String> getTenants() {
+    final Map<String, String> tenants = new HashMap<>(4);
+    final List<Task> taskList = taskRepository.findAllByActiveTenant();
     if (!CollectionUtils.isEmpty(taskList)) {
       taskList.forEach(
           task ->
-              authDetailsByTenant.put(tenantName + "_" + task.getTaskName(), task.getTaskData()));
+              tenants.put(
+                  task.getTenant().getName() + "_" + task.getTaskName(), task.getTaskData()));
     }
-    log.debug("Response :: {}", authDetailsByTenant);
-    return authDetailsByTenant;
+    log.debug("Response :: {}", tenants);
+    return tenants;
   }
 }

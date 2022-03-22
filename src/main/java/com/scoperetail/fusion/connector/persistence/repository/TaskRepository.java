@@ -40,8 +40,12 @@ public interface TaskRepository extends JpaRepository<Task, String> {
       "select tk from Task tk JOIN FETCH tk.tenant t "
           + "WHERE t.isEnabled=1 AND tk.isEnabled=1 AND tk.schedulerName=:schedulerName";
 
+  static final String FIND_TASK_BY_ACTIVE_TENANT =
+      "select tk from Task tk JOIN FETCH tk.tenant t WHERE t.isEnabled=1";
+
   @Query(value = FIND_TASK_BY_SCHEDULER_NAME)
   List<Task> findBySchedulerName(@Param("schedulerName") String schedularName);
 
-  List<Task> findByTenant_NameAndIsEnabled(String tenantId, Boolean isEnabled);
+  @Query(value = FIND_TASK_BY_ACTIVE_TENANT)
+  List<Task> findAllByActiveTenant();
 }
