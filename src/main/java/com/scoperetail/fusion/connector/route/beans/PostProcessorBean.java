@@ -12,10 +12,10 @@ package com.scoperetail.fusion.connector.route.beans;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -41,11 +41,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PostProcessorBean {
 
-  @Autowired
-  private TaskRepository taskRepository;
+  @Autowired private TaskRepository taskRepository;
 
-  @Autowired
-  private TaskLogRepository logRepository;
+  @Autowired private TaskLogRepository logRepository;
 
   public void setTasks(Exchange exchange) {
     Task task = exchange.getProperty("tenantTask", Task.class);
@@ -53,22 +51,39 @@ public class PostProcessorBean {
     String response = exchange.getIn().getBody(String.class);
     String correlationId = exchange.getProperty(CORRELATION_ID, String.class);
     log.info("Response :: {}", response);
-    saveLogIEntity((LocalDateTime) exchange.getProperty("fromTime"),
-        (LocalDateTime) exchange.getProperty("toTime"), task, response, correlationId);
+    saveLogIEntity(
+        (LocalDateTime) exchange.getProperty("fromTime"),
+        (LocalDateTime) exchange.getProperty("toTime"),
+        task,
+        response,
+        correlationId);
     task.setLatestCheckpoint((LocalDateTime) exchange.getProperty("toTime"));
     taskRepository.save(task);
     exchange.getIn().setBody(response);
   }
 
-  private void saveLogIEntity(final LocalDateTime from, final LocalDateTime to,
-      final Task task, String response, String correlationId) {
+  private void saveLogIEntity(
+      final LocalDateTime from,
+      final LocalDateTime to,
+      final Task task,
+      String response,
+      String correlationId) {
     Integer orderCount = new JSONArray(response).length();
-    log.info("TenantId :: {}, TaskId :: {}, CorrelationId :: {},  OrderCount :: {}",
-        task.getTenant().getId(), task.getId(), correlationId, orderCount);
-    TaskLog taskLog = TaskLog.builder().task(task).from(from).to(to)
-        .correlationId(correlationId).taskStatus(TaskStatus.SUCCESS.name()).build();
+    log.info(
+        "TenantId :: {}, TaskId :: {}, CorrelationId :: {},  OrderCount :: {}",
+        task.getTenant().getId(),
+        task.getId(),
+        correlationId,
+        orderCount);
+    TaskLog taskLog =
+        TaskLog.builder()
+            .task(task)
+            .from(from)
+            .to(to)
+            .correlationId(correlationId)
+            .taskStatus(TaskStatus.SUCCESS.name())
+            .build();
     logRepository.save(taskLog);
     log.info("Saved successfully");
   }
-
 }

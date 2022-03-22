@@ -12,10 +12,10 @@ package com.scoperetail.fusion.connector.route;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -40,7 +40,6 @@ import java.util.stream.Collectors;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -59,31 +58,43 @@ public class ExecuteTaskRoute extends RouteBuilder {
   @Override
   public void configure() throws Exception {
 
-    from("direct:executeTask").process(exchange -> {
-      Integer index = (Integer) exchange.getProperty(Exchange.LOOP_INDEX);
-      Task tenantTask = (Task) exchange.getProperty("activeTasks", List.class).get(index);
-      String tenantTaskData = tenantTask.getTaskData();
-      TaskData task = JsonUtils.unmarshal(Optional.of(tenantTaskData),
-          Optional.of(new TypeReference<TaskData>() {}));
-      String uuid = UUID.randomUUID().toString();
-      exchange.setProperty(CORRELATION_ID, uuid);
-      exchange.setProperty(tenantIdentifierHeader, tenantTask.getTenant().getName());
-      exchange.setProperty("tenantTask", tenantTask);
-      log.info("TenantId :: {}, TaskId :: {}, CorrelationId :: {}", tenantTask.getTenant().getId(),
-          tenantTask.getId(), uuid);
-      if (task.getTaskType().equals("http")) {
-        buildHttpTask(exchange, tenantTask, tenantTaskData);
-      }
-    }).toD("${header.CamelHttpUrl}").streamCaching().removeHeaders("*")
+    from("direct:executeTask")
+        .process(
+            exchange -> {
+              Integer index = (Integer) exchange.getProperty(Exchange.LOOP_INDEX);
+              Task tenantTask = (Task) exchange.getProperty("activeTasks", List.class).get(index);
+              String tenantTaskData = tenantTask.getTaskData();
+              TaskData task =
+                  JsonUtils.unmarshal(
+                      Optional.of(tenantTaskData), Optional.of(new TypeReference<TaskData>() {}));
+              String uuid = UUID.randomUUID().toString();
+              exchange.setProperty(CORRELATION_ID, uuid);
+              exchange.setProperty(tenantIdentifierHeader, tenantTask.getTenant().getName());
+              exchange.setProperty("tenantTask", tenantTask);
+              log.info(
+                  "TenantId :: {}, TaskId :: {}, CorrelationId :: {}",
+                  tenantTask.getTenant().getId(),
+                  tenantTask.getId(),
+                  uuid);
+              if (task.getTaskType().equals("http")) {
+                buildHttpTask(exchange, tenantTask, tenantTaskData);
+              }
+            })
+        .toD("${header.CamelHttpUrl}")
+        .streamCaching()
+        .removeHeaders("*")
         .setHeader(EVENT_TYPE, exchangeProperty(EVENT_TYPE))
         .setHeader(CORRELATION_ID, exchangeProperty(CORRELATION_ID))
         .setHeader(tenantIdentifierHeader, exchangeProperty(tenantIdentifierHeader))
-        .to("direct:jsonSplitter").bean(PostProcessorBean.class).end();
+        .to("direct:jsonSplitter")
+        .bean(PostProcessorBean.class)
+        .end();
   }
 
   private void buildHttpTask(Exchange exchange, Task task, String taskData) throws IOException {
-    HttpTaskData httpTask = JsonUtils.unmarshal(Optional.of(taskData),
-        Optional.of(new TypeReference<HttpTaskData>() {}));
+    HttpTaskData httpTask =
+        JsonUtils.unmarshal(
+            Optional.of(taskData), Optional.of(new TypeReference<HttpTaskData>() {}));
 
     String url = httpTask.getUrl();
     String port = httpTask.getPort();
@@ -98,12 +109,15 @@ public class ExecuteTaskRoute extends RouteBuilder {
     exchange.getIn().setHeader(Exchange.HTTP_PORT, port);
     String params = getQueryParams(exchange, queryParams);
     exchange.getIn().setHeader(Exchange.HTTP_QUERY, params);
-    exchange.getIn().setHeader(HttpHeaders.AUTHORIZATION, getAuthHeader(task));
 
-    Optional.ofNullable(httpTask.getHttpHeaders())
-        .ifPresent(map -> map.entrySet().forEach(header -> {
-          exchange.getIn().setHeader(header.getKey(), header.getValue());
-        }));
+    Optional.ofNullable(httpTask.getHeaders())
+        .ifPresent(
+            map ->
+                map.entrySet()
+                    .forEach(
+                        header -> {
+                          exchange.getIn().setHeader(header.getKey(), header.getValue());
+                        }));
     log.info("URL :: {}?{}", url, params);
   }
 
@@ -112,25 +126,25 @@ public class ExecuteTaskRoute extends RouteBuilder {
     return Objects.isNull(latestCheckpoint) ? task.getInitialCheckPoint() : latestCheckpoint;
   }
 
-  private String getAuthHeader(Task tenantTask) {
-    return "Basic " + HttpHeaders.encodeBasicAuth(tenantTask.getTenant().getAuthName(),
-        tenantTask.getTenant().getAuthPassword(), null);
-  }
-
   private String getQueryParams(Exchange exchange, Map<String, String> queryParams) {
     String params = null;
     List<String> paramList = new ArrayList<>();
 
-    Optional.ofNullable(queryParams).ifPresent(map -> map.entrySet().forEach(param -> {
-      String paramValue = exchange.getProperty(param.getValue()) != null
-          ? exchange.getProperty(param.getValue()).toString()
-          : param.getValue();
-      paramList.add(param.getKey() + "=" + paramValue);
-    }));
+    Optional.ofNullable(queryParams)
+        .ifPresent(
+            map ->
+                map.entrySet()
+                    .forEach(
+                        param -> {
+                          String paramValue =
+                              exchange.getProperty(param.getValue()) != null
+                                  ? exchange.getProperty(param.getValue()).toString()
+                                  : param.getValue();
+                          paramList.add(param.getKey() + "=" + paramValue);
+                        }));
     if (!CollectionUtils.isEmpty(paramList)) {
       params = paramList.stream().collect(Collectors.joining("&"));
     }
     return params;
   }
-
 }

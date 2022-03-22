@@ -12,10 +12,10 @@ package com.scoperetail.fusion.connector.persistence.repository;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -37,10 +37,15 @@ import com.scoperetail.fusion.connector.persistence.entity.Task;
 public interface TaskRepository extends JpaRepository<Task, String> {
 
   static final String FIND_TASK_BY_SCHEDULER_NAME =
-      "select tt from Task tt JOIN FETCH tt.tenant t "
-          + "WHERE t.isEnabled=1 and tt.schedulerName=:schedulerName";
+      "select tk from Task tk JOIN FETCH tk.tenant t "
+          + "WHERE t.isEnabled=1 AND tk.isEnabled=1 AND tk.schedulerName=:schedulerName";
+
+  static final String FIND_TASK_BY_ACTIVE_TENANT =
+      "select tk from Task tk JOIN FETCH tk.tenant t WHERE t.isEnabled=1";
 
   @Query(value = FIND_TASK_BY_SCHEDULER_NAME)
   List<Task> findBySchedulerName(@Param("schedulerName") String schedularName);
 
+  @Query(value = FIND_TASK_BY_ACTIVE_TENANT)
+  List<Task> findAllByActiveTenant();
 }
