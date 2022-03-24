@@ -1,0 +1,32 @@
+[
+  {
+    "orderType": "REGULAR",
+    "requestId": "requestId1",
+    "customerId": "customerId1",
+    "lines": [
+      {
+        "productId": "1",
+        "quantity": 10
+      },
+      {
+        "productId": "2",
+        "quantity": 20
+      }
+    ]
+  },
+  {
+    "orderType": "RUSH",
+    "requestId": "requestId2",
+    "customerId": "customerId2",
+    "lines": [
+      {
+        "productId": "3",
+        "quantity": 10
+      },
+      {
+        "productId": "4",
+        "quantity": 20
+      }
+    ]
+  }
+]
