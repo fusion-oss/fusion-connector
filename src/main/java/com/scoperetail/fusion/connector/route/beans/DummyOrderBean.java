@@ -1,4 +1,4 @@
-package com.scoperetail.fusion.connector.route;
+package com.scoperetail.fusion.connector.route.beans;
 
 /*-
  * *****
@@ -12,10 +12,10 @@ package com.scoperetail.fusion.connector.route;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,18 +26,33 @@ package com.scoperetail.fusion.connector.route;
  * =====
  */
 
-import org.apache.camel.builder.RouteBuilder;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.scoperetail.fusion.connector.common.JsonUtils;
+import com.scoperetail.fusion.connector.persistence.dto.DummyOrder;
 
-@Service
-public class RabbitMqRoute extends RouteBuilder {
+public class DummyOrderBean {
 
-  @Value("${rabbitmq.url}")
-  private String rabbitMqUrl;
+  @Autowired private ResourceLoader resourceLoader;
 
-  @Override
-  public void configure() throws Exception {
-    from("direct:rabbitmq").to(rabbitMqUrl).log("Sent message to queue.").end();
+  public List<DummyOrder> getOrders() throws IOException {
+    List<DummyOrder> orders = new ArrayList<>(1);
+    final Resource resource = resourceLoader.getResource("classpath:dummyOrder.json");
+    if (resource.exists()) {
+      final String readString = Files.readString(Path.of(resource.getFile().getPath()));
+      orders =
+          JsonUtils.unmarshal(
+              Optional.ofNullable(readString),
+              Optional.of(new TypeReference<List<DummyOrder>>() {}));
+    }
+    return orders;
   }
 }

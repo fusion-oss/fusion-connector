@@ -1,0 +1,2 @@
+INSERT INTO tenant (id, name, is_enabled) VALUES(1, 'tenant1', 1);
+INSERT INTO task (id, tenant_id, scheduler_name, task_name, task_data, initial_checkpoint, is_enabled) VALUES(1, 1, 'FusionConnector', 'ORDER_CREATE', '{"taskType": "http","url": "http://localhost:8081/camel/orders","methodType": "get","port": "8081","queryParams":{"paramKey":"paramValue"}}', '2022-01-01 00:00:00.000', 1);

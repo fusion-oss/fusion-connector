@@ -12,10 +12,10 @@ package com.scoperetail.fusion.connector.route;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,24 +26,18 @@ package com.scoperetail.fusion.connector.route;
  * =====
  */
 
+import static org.apache.camel.model.rest.RestBindingMode.auto;
+import java.util.List;
 import org.apache.camel.builder.RouteBuilder;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import com.scoperetail.fusion.connector.route.beans.DummyOrderBean;
 
 @Service
-public class JsonSplitterRoute extends RouteBuilder {
-
-  @Value("${destination.URL}")
-  private String destinationURL;
+public class DummyHttpRouteBuilder extends RouteBuilder {
 
   @Override
   public void configure() throws Exception {
-    from("direct:jsonSplitter")
-        .split(jsonpath("$"))
-        .streaming()
-        .marshal()
-        .json(true)
-        .toD(destinationURL)
-        .log("Sent message to queue.");
+    restConfiguration().component("servlet").bindingMode(auto);
+    rest("/orders").get().route().outputType(List.class).bean(DummyOrderBean.class);
   }
 }
