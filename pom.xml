@@ -16,6 +16,7 @@
 	<description>Fusion Connector</description>
 
 	<properties>
+		<sonar.organization>fusion-oss</sonar.organization>
 		<spring.cloud.version>2021.0.0</spring.cloud.version>
 		<mariadb.version>2.7.2</mariadb.version>
 		<camel.version>3.11.1</camel.version>
